@@ -110,9 +110,10 @@ namespace UnityEditor.AddressableAssets.Build.DataBuilders
             if (builderInput.Logger == null && m_Log != null)
                 WriteBuildLog((BuildLog)m_Log, Path.GetDirectoryName(Application.dataPath) + "/" + Addressables.LibraryPath);
 
-            if (result is AddressableAssetBuildResult)
+            if (result != null)
             {
-                AddressableAnalytics.ReportBuildEvent(builderInput, result as AddressableAssetBuildResult, buildType);
+                bool isPlayModeBuild = result.GetType() == typeof(AddressablesPlayModeBuildResult);
+                AddressableAnalytics.ReportBuildEvent(builderInput, result.Duration, result.Error, isPlayModeBuild, buildType);
             }
 
             return result;

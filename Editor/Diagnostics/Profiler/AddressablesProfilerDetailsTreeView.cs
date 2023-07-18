@@ -124,9 +124,7 @@ namespace UnityEditor.AddressableAssets.Diagnostics
         private void Bind(string columnName, Label lbl, int itemIndex)
         {
             ContentData data = m_TreeView.GetItemDataForIndex<ContentData>(itemIndex);
-            if (lbl == null)
-                return;
-            if (data == null)
+            if (lbl == null || data == null)
             {
                 lbl.text = "ERROR";
                 return;

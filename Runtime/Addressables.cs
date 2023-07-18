@@ -375,7 +375,7 @@ namespace UnityEngine.AddressableAssets
             foreach (Type type in types)
             {
                 if (!typeToKeys.TryGetValue(type, out List<string> keysForType))
-                    typeToKeys.Add(type, new List<string>() {key});
+					typeToKeys.Add(type, new List<string>() { key });
                 else
                     keysForType.Add(key);
             }
@@ -677,7 +677,7 @@ namespace UnityEngine.AddressableAssets
         /// <example>
         /// <code source="../Tests/Editor/DocExampleCode/ScriptReference/UsingLog.cs" region="SAMPLE" />
         /// </example>
-        /// <seealso href="xref:addressables-asset-settings">Enable all logging</seealso>
+        /// <seealso href="xref:addressables-asset-settings#enable-all-logging">Enable all logging</seealso>
         [Conditional(k_AddressablesLogConditional)]
         public static void Log(string msg)
         {
@@ -690,7 +690,7 @@ namespace UnityEngine.AddressableAssets
         /// <remarks>
         /// LogFormat supports Composite Formatting and works the same way as [Debug.LogFormat](xref:UnityEngine.Debug.LogFormat(System.String,System.Object[])). Addressables logs warnings and errors so by default this function will **not** log.
         /// </remarks>
-        /// <seealso href="xref:addressables-asset-settings">Enable all logging</seealso>
+        /// <seealso href="xref:addressables-asset-settings#enable-all-logging">Enable all logging</seealso>
         /// <param name="format">The string with format tags.</param>
         /// <param name="args">The args used to fill in the format tags.</param>
         /// <example>
@@ -741,7 +741,7 @@ namespace UnityEngine.AddressableAssets
         /// </remarks>
         /// <param name="msg">The msg to log</param>
         /// <code source="../Tests/Editor/DocExampleCode/ScriptReference/UsingLogError.cs" region="SAMPLE"/>
-        /// <seealso href="xref:addressables-asset-settings">Enable all logging</seealso>
+        /// <seealso href="xref:addressables-asset-settings#enable-all-logging">Enable all logging</seealso>
         public static void LogError(string msg)
         {
             m_Addressables.LogError(msg);
@@ -759,7 +759,7 @@ namespace UnityEngine.AddressableAssets
         /// <example>
         /// <code source="../Tests/Editor/DocExampleCode/ScriptReference/UsingLogException.cs" region="SAMPLE_ASYNC_OP"/>
         /// </example>
-        /// <seealso href="xref:addressables-asset-settings">Enable all logging</seealso>
+        /// <seealso href="xref:addressables-asset-settings#enable-all-logging">Enable all logging</seealso>
         public static void LogException(AsyncOperationHandle op, Exception ex)
         {
             m_Addressables.LogException(op, ex);
@@ -816,7 +816,7 @@ namespace UnityEngine.AddressableAssets
         /// The Addressables system initializes itself at runtime the first time you call an Addressables API function.
         /// You can call this function explicitly to initialize Addressables earlier. This function does nothing if
         /// initialization has already occurred.
-        /// 
+        ///
         /// Other Addressables API functions such as <see cref="LoadAssetAsync">LoadAssetAsync</see> also automatically initializes the
         /// system if not already initialized. However in some cases you may wish to explicitly initalize Addressables,
         /// for example to check if the initialization process completed successfully before proceeding to load Addressables
@@ -1017,7 +1017,7 @@ namespace UnityEngine.AddressableAssets
         /// The operation always completes successfully and the operation handle's `Result` object always contains a valid IList instance.
         /// If no assets matched the specified keys, the list in `Result` is empty.
         ///
-        /// See [Loading assets by location](xref:addressables-api-load-asset-async) for more information.
+        /// See [Loading assets by location](xref:addressables-api-load-asset-async#loading-assets-by-location) for more information.
         ///
         /// See [Operations](xref:addressables-async-operation-handling) for information on handling the asynchronous operations used
         /// to load Addressable assets.
@@ -1039,7 +1039,7 @@ namespace UnityEngine.AddressableAssets
         /// The operation always completes successfully and the operation handle's `Result` object always contains a valid IList instance.
         /// If no assets matched the specified keys, the list in `Result` is empty.
         ///
-        /// See [Loading assets by location](xref:addressables-api-load-asset-async) for more information.
+        /// See [Loading assets by location](xref:addressables-api-load-asset-async#loading-assets-by-location) for more information.
         ///
         /// See [Operations](xref:addressables-async-operation-handling) for information on handling the asynchronous operations used
         /// to load Addressable assets.
@@ -1074,7 +1074,7 @@ namespace UnityEngine.AddressableAssets
         /// The operation always completes successfully and the operation handle's `Result` object always contains a valid IList instance.
         /// If no assets matched the specified key, the list in `Result` is empty.
         ///
-        /// See [Loading assets by location](xref:addressables-api-load-asset-async) for more information.
+        /// See [Loading assets by location](xref:addressables-api-load-asset-async#loading-assets-by-location) for more information.
         ///
         /// See [Operations](xref:addressables-async-operation-handling) for information on handling the asynchronous operations used
         /// to load Addressable assets.
@@ -1924,7 +1924,7 @@ namespace UnityEngine.AddressableAssets
         /// Loads a Prefab and instantiates a copy of the prefab into the active scene or parent GameObject. The Prefab and any resources associated with it
         /// are loaded asynchronously, whereas the instantiation is executed synchronously. In the situation where the Prefab and resources are already loaded,
         /// the entire operation is completed synchronously.
-        /// 
+        ///
         /// Most versions of the function shares the same parameters(position, rotation, etc.) as [Object.Instantiate](xref:UnityEngine.Object.Instantiate*).
         /// You can create an [InstantiationParameters](xref:UnityEngine.ResourceManagement.ResourceProviders.InstantiationParameters) struct to store these
         /// parameters, pass it into the function instead.
@@ -2027,9 +2027,9 @@ namespace UnityEngine.AddressableAssets
         /// <param name="activateOnLoad">If false, the scene will load but not activate (for background loading).  The SceneInstance returned has an Activate() method that can be called to do this at a later point.</param>
         /// <param name="priority">Async operation priority for scene loading.</param>
         /// <returns>The operation handle for the request.</returns>
-        /// <seealso cref="Addressables.LoadSceneAsync"/>
+        /// <seealso cref="Addressables.LoadSceneAsync(object, LoadSceneMode, bool, int)"/>
         //[Obsolete("We have added Async to the name of all asynchronous methods (UnityUpgradable) -> LoadSceneAsync(*)", true)]
-        [Obsolete]        
+        [Obsolete]
         public static AsyncOperationHandle<SceneInstance> LoadScene(object key, LoadSceneMode loadMode = LoadSceneMode.Single, bool activateOnLoad = true, int priority = 100)
         {
             return LoadSceneAsync(key, loadMode, activateOnLoad, priority);
@@ -2059,7 +2059,7 @@ namespace UnityEngine.AddressableAssets
         /// the parameters used in the Unity [SceneManager.LoadSceneAsync](https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.LoadSceneAsync.html)
         /// method.
         ///
-        /// See [Loading Scenes](xref:addressables-api-load-asset-async) for more details.
+        /// See [Loading Scenes](xref:addressables-api-load-asset-async#loading-scenes) for more details.
         /// </remarks>
         /// <param name="key">The key of the location of the scene to load.</param>
         /// <param name="loadMode">Scene load mode.</param>
@@ -2239,6 +2239,18 @@ namespace UnityEngine.AddressableAssets
         }
 
         /// <summary>
+		/// Merge the source scene in the destination scene.
+		/// Note: This function is destructive: The source Scene will be destroyed once the merge has been completed.
+		/// This implementation will preserve the Addressable assets loaded in the source scene.
+		/// </summary>
+		/// <param name="sourceScene">The Scene that will be merged into the destination Scene.</param>
+		/// <param name="destinationScene">Existing Scene to merge the source Scene into.</param>
+		public static void MergeScenes(Scene sourceScene, Scene destinationScene)
+		{
+			m_Addressables.MergeScenes(sourceScene, destinationScene);
+		}
+
+		/// <summary>
         /// Checks all updatable content catalogs for a new version.
         /// </summary>
         /// <param name="autoReleaseHandle">If true, the handle will automatically be released when the operation completes.</param>
@@ -2262,7 +2274,7 @@ namespace UnityEngine.AddressableAssets
         /// If you update a catalog when you have already loaded content from the related AssetBundles, you can encounter conflicts
         /// between the loaded AssetBundles and the updated versions. To avoid conflicts, update the catalog before loading assets or unload
         /// the AssetBundles before the updating the catalog. You can enable the
-        /// [Unique Bundle Ids](xref:addressables-content-update-builds)
+        /// [Unique Bundle Ids](xref:addressables-content-update-builds#unique-bundle-ids-setting)
         /// option in your Addressable settings to avoid conflicts, but that can increase memory consumption since you will still
         /// have the original AssetBundles in memory after loading the updated ones. Enabling this option can also make the download size of content
         /// updates larger because typically more AssetBundles must be rebuilt.
@@ -2283,7 +2295,7 @@ namespace UnityEngine.AddressableAssets
         /// Alternatively you can directly get a list of catalogs and perform the updates:
         /// <code source="../Tests/Editor/DocExampleCode/MiscellaneousTopics.cs" region="doc_CheckCatalog"/>
         /// </example>
-        /// <seealso href="xref:addressables-api-load-content-catalog-async">Updating catalogs</seealso>
+        /// <seealso href="xref:addressables-api-load-content-catalog-async#updating-catalogs">Updating catalogs</seealso>
         public static AsyncOperationHandle<List<IResourceLocator>> UpdateCatalogs(IEnumerable<string> catalogs = null, bool autoReleaseHandle = true)
         {
             return m_Addressables.UpdateCatalogs(catalogs, autoReleaseHandle, false);
@@ -2359,7 +2371,7 @@ namespace UnityEngine.AddressableAssets
         /// 
         /// In the Editor, calling CleanBundleCache when not using the "Use Existing Build (requires built groups)" will clear all bundles. No bundles are used by "Use Asset Database (fastest)" or "Simulate Groups (advanced)" catalogs.
         ///
-        /// See [AssetBundle caching](xref:addressables-remote-content-distribution) for more details.
+        /// See [AssetBundle caching](xref:addressables-remote-content-distribution#assetbundle-caching) for more details.
         /// </remarks>
         /// <param name="catalogsIds">The ids of catalogs whose bundle cache entries we want to preserve. If null, entries for all currently loaded catalogs will be preserved.</param>
         /// <returns>The operation handle for the request. Note, that it is user's responsibility to release the returned operation; this can be done before or after the operation completes.</returns>

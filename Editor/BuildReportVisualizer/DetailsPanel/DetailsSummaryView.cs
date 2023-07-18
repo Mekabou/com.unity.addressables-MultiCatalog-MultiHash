@@ -76,7 +76,6 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
                 }),
                 BuildReportUtility.CreateButton("Select in Group", () =>
                 {
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDetailsSelectInGroup);
                     m_Window.NavigateToView(ContentViewType.GroupsView);
                     m_Window.SelectItemInView(BuildReportUtility.ComputeDataHash(bundle.Group.Name, bundle.Name), true);
                 })));
@@ -105,12 +104,10 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
             m_DetailsSummary.Add(CreateButtonRow(
                 BuildReportUtility.CreateButton("Select in Editor", () =>
                 {
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDetailsSelectInEditor);
                     Selection.activeObject = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(reportAsset.ExplicitAsset.AssetPath);
                 }),
                 BuildReportUtility.CreateButton("Select in Group", () =>
                 {
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDetailsSelectInGroup);
                     m_Window.NavigateToView(ContentViewType.GroupsView);
                     m_Window.SelectItemInView(BuildReportUtility.ComputeDataHash(reportAsset.ExplicitAsset.AddressableName));
                 }),
@@ -121,7 +118,6 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
                 })));
             m_DetailsSummary.Add(CreateButtonRow(BuildReportUtility.CreateButton("Select in Bundle", () =>
                 {
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDetailsSelectInBundle);
                     m_Window.NavigateToView(ContentViewType.BundleView);
                     m_Window.SelectItemInView(BuildReportUtility.ComputeDataHash(reportAsset.ExplicitAsset.Bundle.Name, reportAsset.ExplicitAsset.AddressableName));
                 })));
@@ -146,7 +142,6 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
                 }),
                 BuildReportUtility.CreateButton("Select in Editor", () =>
                 {
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDetailsSelectInEditor);
                     Selection.activeObject = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(reportAsset.DataFromOtherAsset.AssetPath);
                 })));
             m_DetailsSummary.Add(CreateHelpTextBox("This asset was pulled into the AssetBundle because one or more Addressable assets have references to it."));

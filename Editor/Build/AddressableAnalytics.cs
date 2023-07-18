@@ -26,14 +26,11 @@ namespace UnityEditor.AddressableAssets
         {
             public bool IsUsingCCD;
             public bool IsContentUpdateBuild;
-            public bool DebugBuildLayoutEnabled;
-            public bool AutoOpenBuildReportEnabled;
             public bool BuildAndRelease;
             public bool IsPlayModeBuild;
             public int BuildScript;
             public int NumberOfAddressableAssets;
             public int NumberOfLabels;
-            public int NumberOfAssetBundles;
             public int NumberOfGroups;
             public int NumberOfGroupsUsingLZ4;
             public int NumberOfGroupsUsingLZMA;
@@ -106,27 +103,7 @@ namespace UnityEditor.AddressableAssets
             RunContentUpdateBuild = 13,
             CannotLocateBinFile = 14,
             BuildFailedDueToModifiedStaticEntries = 15,
-            BuildInterruptedDueToStaticModifiedEntriesInUpdate = 16,
-            OpenBuildReportManually = 17,
-            BuildReportSelectedExploreTab = 18,
-            BuildReportSelectedPotentialIssuesTab = 19,
-            BuildReportSelectedSummaryTab = 20,
-            BuildReportViewByAssetBundle = 21,
-            BuildReportViewByAssets = 22,
-            BuildReportViewByLabels = 23,
-            BuildReportViewByGroup = 24,
-            BuildReportViewByDuplicatedAssets = 25,
-            BuildReportImportedManually = 26,
-            BuildReportOpenRefsTo = 27,
-            BuildReportOpenRefsBy = 28,
-            BuildReportDrillDownRefsTo = 29,
-            BuildReportDrillDownRefsBy = 30,
-            BuildReportDetailsSelectInGroup = 31,
-            BuildReportDetailsSelectInEditor = 32,
-            BuildReportDetailsSelectInBundle = 33,
-            BuildReportDetailsClose = 34,
-            BuildReportDetailsOpen = 35,
-            ProfileModuleViewCreated = 36
+            BuildInterruptedDueToStaticModifiedEntriesInUpdate = 16
         }
 
         internal enum BuildScriptType
@@ -218,23 +195,13 @@ namespace UnityEditor.AddressableAssets
             return ErrorType.GenericError;
         }
 
-        internal static BuildData GenerateBuildData(AddressablesDataBuilderInput builderInput, AddressableAssetBuildResult result, BuildType buildType)
+        internal static BuildData GenerateBuildData(AddressablesDataBuilderInput builderInput, double totalBuildDurationSeconds, bool isPlayModeBuild, string error, BuildType buildType)
         {
             AddressableAssetSettings currentSettings = builderInput.AddressableSettings;
             bool isContentUpdateBuild = builderInput.IsContentUpdateBuild;
             bool isBuildAndRelease = builderInput.IsBuildAndRelease;
 
             bool usingCCD = false;
-
-            string error = result.Error;
-            bool isPlayModeBuild = result is AddressablesPlayModeBuildResult;
-            double totalBuildDurationSeconds = result.Duration;
-            int numberOfAssetBundles = -1;
-
-            if (result is AddressablesPlayerBuildResult buildRes)
-            {
-                numberOfAssetBundles = buildRes.AssetBundleBuildResults.Count;
-            }
 
 #if ENABLE_CCD
             usingCCD = true;
@@ -401,13 +368,8 @@ namespace UnityEditor.AddressableAssets
                 IsPlayModeBuild = false,
                 BuildScript = (int)buildScriptType,
                 BuildAndRelease = isBuildAndRelease,
-#if UNITY_2022_2_OR_NEWER
-                DebugBuildLayoutEnabled = ProjectConfigData.GenerateBuildLayout,
-                AutoOpenBuildReportEnabled = ProjectConfigData.AutoOpenAddressablesReport && ProjectConfigData.GenerateBuildLayout,
-#endif
                 NumberOfLabels = currentSettings.labelTable.labelNames.Count,
                 IsIncrementalBuild = (int)buildType,
-                NumberOfAssetBundles = numberOfAssetBundles,
                 NumberOfAddressableAssets = numberOfAddressableAssets,
                 MinNumberOfAddressableAssetsInAGroup = minNumberOfAssetsInAGroup,
                 MaxNumberOfAddressableAssetsInAGroup = maxNumberOfAssetsInAGroup,
@@ -436,7 +398,7 @@ namespace UnityEditor.AddressableAssets
             return data;
         }
 
-        internal static void ReportBuildEvent(AddressablesDataBuilderInput builderInput, AddressableAssetBuildResult result, BuildType buildType)
+        internal static void ReportBuildEvent(AddressablesDataBuilderInput builderInput, double totalBuildDurationSeconds, string error, bool isPlayModeBuild, BuildType buildType)
         {
             if (!EditorAnalytics.enabled)
                 return;
@@ -445,7 +407,7 @@ namespace UnityEditor.AddressableAssets
                 if (!RegisterEvent(BuildEvent))
                     return;
 
-            BuildData data = GenerateBuildData(builderInput, result, buildType);
+            BuildData data = GenerateBuildData(builderInput, totalBuildDurationSeconds, isPlayModeBuild, error, buildType);
             EditorAnalytics.SendEventWithLimit(BuildEvent, data);
         }
 
@@ -467,7 +429,7 @@ namespace UnityEditor.AddressableAssets
             return data;
         }
 
-        internal static void ReportUsageEvent(UsageEventType eventType, bool limitEventOncePerSession = false, int contentUpdateRestriction = -1)
+        internal static void ReportUsageEvent(UsageEventType eventType, bool limitEventOncePerSession = false, int restriction = -1)
         {
             if (!EditorAnalytics.enabled)
                 return;
@@ -484,7 +446,7 @@ namespace UnityEditor.AddressableAssets
                 if (!RegisterEvent(UsageEvent))
                     return;
 
-            UsageData data = GenerateUsageData(eventType, (AnalyticsContentUpdateRestriction) contentUpdateRestriction);
+            UsageData data = GenerateUsageData(eventType, (AnalyticsContentUpdateRestriction)restriction);
             EditorAnalytics.SendEventWithLimit(UsageEvent, data);
         }
 

@@ -85,7 +85,7 @@ namespace UnityEditor.AddressableAssets.Build
     /// </summary>
     public class AddressablesPlayerBuildResult : AddressableAssetBuildResult
     {
-        internal List<BundleBuildResult> m_AssetBundleBuildResults = new List<BundleBuildResult>();
+        private List<BundleBuildResult> m_AssetBundleBuildResults = new List<BundleBuildResult>();
 
         /// <summary>
         /// Information about a bundle build results

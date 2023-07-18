@@ -182,7 +182,6 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
             if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath) && Path.GetExtension(filePath).ToLower() == ".json")
             {
                 AddReportFromFile(filePath, m_ListView, true, true);
-                AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportImportedManually);
             }
         }
 
@@ -244,7 +243,6 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
                 }
             }
 
-            AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportImportedManually);
             listView.Rebuild();
         }
 

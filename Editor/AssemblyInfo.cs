@@ -7,4 +7,3 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Unity.Addressables.Tests")]
 [assembly: InternalsVisibleTo("PerformanceTests.Editor")]
 [assembly: InternalsVisibleTo("Unity.Localization.Editor")]
-[assembly: InternalsVisibleTo("Unity.Addressables.Android.Editor")]

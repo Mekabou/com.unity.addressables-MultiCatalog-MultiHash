@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.AddressableAssets.Build.Layout;
 using UnityEditor.AddressableAssets.GUIElements;
-using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -209,7 +208,6 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
             switch(tab)
             {
                 case DetailsViewTab.ReferencedBy:
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportOpenRefsBy);
                     foreach (var referencingBundle in bundle.DependentBundles)
                     {
                         var referencingAssetList = GetReferencingAssetsFromBundle(referencingBundle, bundle);
@@ -217,8 +215,7 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
                         {
                             value.DrillableItems.Add(new DetailsListItem(referencingBundle.Name, BuildReportUtility.GetAssetBundleIconPath(), () => ShowAssetsThatLinkToBundle(DetailsViewTab.ReferencedBy,
                                 referencingBundle,
-                                GetReferencingAssetsFromBundle(referencingBundle, bundle),
-                                true), BuildReportUtility.GetForwardIconPath()));
+                                GetReferencingAssetsFromBundle(referencingBundle, bundle)), BuildReportUtility.GetForwardIconPath()));
                         }
                         else
                         {
@@ -232,7 +229,6 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
                     break;
 
                 case DetailsViewTab.ReferencesTo:
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportOpenRefsTo);
                     foreach (var file in bundle.Files)
                     {
                         Dictionary<string, int> addressToIndexMap = new Dictionary<string, int>();
@@ -266,10 +262,8 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
             return value;
         }
 
-        void ShowReferencesByForAsset(DetailsContents value, BuildLayout.ExplicitAsset asset, bool shouldCallDisplayContents, bool triggerAnalytics = false)
+        void ShowReferencesByForAsset(DetailsContents value, BuildLayout.ExplicitAsset asset, bool shouldCallDisplayContents)
         {
-            if (triggerAnalytics)
-                AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDrillDownRefsBy);
             if (shouldCallDisplayContents)
                 value = new DetailsContents(asset.AddressableName, asset.AssetPath);
             foreach (var refAsset in asset.ReferencingAssets)
@@ -278,11 +272,9 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
                     value.DrillableItems.Add(new DetailsListItem(refAsset.AddressableName, refAsset.AssetPath, null, null));
                 else
                 {
-                    value.DrillableItems.Add(new DetailsListItem(refAsset.Bundle.Name, BuildReportUtility.GetAssetBundleIconPath(), () =>
-                        ShowAssetsThatLinkToBundle(DetailsViewTab.ReferencedBy,
+                    value.DrillableItems.Add(new DetailsListItem(refAsset.Bundle.Name, BuildReportUtility.GetAssetBundleIconPath(), () => ShowAssetsThatLinkToBundle(DetailsViewTab.ReferencedBy,
                         refAsset.Bundle,
-                        GetAssetsThatLinkFromBundleMap(asset.Bundle, refAsset)[refAsset.Bundle],
-                        true), BuildReportUtility.GetForwardIconPath()));
+                        GetAssetsThatLinkFromBundleMap(asset.Bundle, refAsset)[refAsset.Bundle]), BuildReportUtility.GetForwardIconPath()));
                 }
             }
 
@@ -293,10 +285,8 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
             }
         }
 
-        void ShowReferencesToForAsset(DetailsContents value, BuildLayout.ExplicitAsset asset, bool shouldCallDisplayContents, bool triggerAnalytics = false)
+        void ShowReferencesToForAsset(DetailsContents value, BuildLayout.ExplicitAsset asset, bool shouldCallDisplayContents)
         {
-            if (triggerAnalytics)
-                AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDrillDownRefsTo);
             if (shouldCallDisplayContents)
                 value = new DetailsContents(asset.AddressableName, asset.AssetPath);
             foreach (var internalAsset in asset.InternalReferencedExplicitAssets)
@@ -306,8 +296,7 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
                 value.DrillableItems.Add(new DetailsListItem(externalAsset.Bundle.Name, BuildReportUtility.GetAssetBundleIconPath(), () => ShowAssetsThatLinkToBundle(
                     DetailsViewTab.ReferencesTo,
                     externalAsset.Bundle,
-                    GetAssetsThatLinkToBundleMap(asset.Bundle, asset)[externalAsset.Bundle],
-                    true), BuildReportUtility.GetForwardIconPath()));
+                    GetAssetsThatLinkToBundleMap(asset.Bundle, asset)[externalAsset.Bundle]), BuildReportUtility.GetForwardIconPath()));
 
             foreach (var implicitAsset in asset.InternalReferencedOtherAssets)
                 value.DrillableItems.Add(new DetailsListItem(implicitAsset.AssetPath, implicitAsset.AssetPath, null, null, FontStyle.Italic));
@@ -343,6 +332,7 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
         {
             Dictionary<BuildLayout.Bundle, List<BuildLayout.ExplicitAsset>> bundlesLinkedToAsset = new Dictionary<BuildLayout.Bundle, List<BuildLayout.ExplicitAsset>>();
 
+            //oof - this sucks, surely there's another way
             foreach(var bDep in bundle.DependentBundles)
             {
                 foreach (var depFile in bDep.Files)
@@ -363,24 +353,16 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
             return bundlesLinkedToAsset;
         }
 
-        void ShowAssetsThatLinkToBundle(DetailsViewTab tab, BuildLayout.Bundle bundle, List<BuildLayout.ExplicitAsset> linkedAssets, bool triggerAnalytics = false)
+        void ShowAssetsThatLinkToBundle(DetailsViewTab tab, BuildLayout.Bundle bundle, List<BuildLayout.ExplicitAsset> linkedAssets)
         {
-            if (triggerAnalytics)
-            {
-                if (tab == DetailsViewTab.ReferencesTo)
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDrillDownRefsTo);
-                else
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportDrillDownRefsBy);
-            }
-
             DetailsContents dc = new DetailsContents(bundle.Name, BuildReportUtility.GetAssetBundleIconPath());
             foreach (var asset in linkedAssets)
             {
                 Action onDrillDown = null;
                 if (tab == DetailsViewTab.ReferencesTo && asset.ExternallyReferencedAssets.Count > 0)
-                    onDrillDown = () => ShowReferencesToForAsset(dc, asset, true, true);
+                    onDrillDown = () => ShowReferencesToForAsset(dc, asset, true);
                 if (tab == DetailsViewTab.ReferencedBy && asset.ReferencingAssets.Count > 0)
-                    onDrillDown = () => ShowReferencesByForAsset(dc, asset, true, true);
+                    onDrillDown = () => ShowReferencesByForAsset(dc, asset, true);
                 dc.DrillableItems.Add(new DetailsListItem(asset.AddressableName, asset.AssetPath, onDrillDown, onDrillDown == null ? null : BuildReportUtility.GetForwardIconPath()));
             }
 
@@ -398,12 +380,10 @@ namespace UnityEditor.AddressableAssets.BuildReportVisualizer
             switch (tab)
             {
                 case DetailsViewTab.ReferencedBy:
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportOpenRefsBy);
                     ShowReferencesByForAsset(value, asset, false);
                     break;
 
                 case DetailsViewTab.ReferencesTo:
-                    AddressableAnalytics.ReportUsageEvent(AddressableAnalytics.UsageEventType.BuildReportOpenRefsTo);
                     ShowReferencesToForAsset(value, asset, false);
                     break;
             }
