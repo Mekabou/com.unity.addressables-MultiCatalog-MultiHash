@@ -14,9 +14,11 @@ The Addressables package by Unity provides a novel way of managing and packing a
 
 This variant forked from the original Addressables-project adds support for building your assets across several catalogs in one go and provides several other benefits, e.g. reduced build times and build size, as well as keeping the buildcache intact.
 
-本分支软件包目前跟踪 _vanilla_ Addressables package `1.21.9` 版本，测试时使用 Unity 官方 Addressables package `1.19.19` 版本。
+本分支软件包目前跟踪 _vanilla_ Addressables package `1.21.14` 版本，测试时使用 Unity 官方 Addressables package `1.19.19` 版本。
 
 **Note**: 此版本库并不跟踪 _vanilla_ Addressables package 的每个可用版本，而是更新一些特定版本。
+
+有关此 Addressables 分支中的其他功能，请查看 [Additional features](#additional-features) 部分。
 
 ## The problem
 
@@ -44,7 +46,7 @@ Afterwards, the contents for each external catalog are extracted to their proper
 
 ## Installation
 
-该软件包最好使用 Unity 的Package Manager安装。在package manager的输入框中填写下方 git-tracked 包的 URL:
+该软件包最好使用 Unity Package Manager 安装。在 package manager 的输入框中填写下方 git-tracked 包的 URL:
 
 > <https://github.com/Heeger0/com.unity.addressables-MultiCatalog-MultiHash.git>
 
@@ -151,3 +153,13 @@ Afterwards, the contents for each external catalog are extracted to their proper
 当你需要加载这些 external packages 中放置的资源时，可以使用:
 
 > `Addressables.LoadContentCatalogAsync("path/to/dlc/catalogName.json");`
+
+## Additional Features
+
+Below you'll find additional features in this fork of Addressables that were considered missing in the vanilla flavour of Addressables.
+
+### Addressables Scene Merging
+
+When merging scenes using `SceneManager.MergeScenes`, the source scene will be unloaded by Unity. If this source scene is a scene loaded by Addressables, then its loading handle will be disposed off and releasing all assets associated with the scene. This will cause all merged assets from the source scene that were handled by this single handle be unloaded as well. This may cause several assets to not show up properly anymore, e.g. the well known pink missing material, no meshes, audio clips, etc. will all be missing.
+
+This is resolved by adding a `MergeScenes` method to `Addressables`, similar to `SceneManager.MergeScenes`, but will keep the Addressable scene's loading handle alive until the destination scene is unloaded. This process can be repeated multiple times, passing the loading handle until it's current bearer is unloaded.

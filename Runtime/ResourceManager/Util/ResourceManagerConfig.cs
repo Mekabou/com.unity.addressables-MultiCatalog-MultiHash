@@ -628,6 +628,7 @@ namespace UnityEngine.ResourceManagement.Util
             {
                 RuntimePlatform.Android
             };
+
             return platformsThatUseUrlForLocalLoads.Contains((Application.platform));
         }
 

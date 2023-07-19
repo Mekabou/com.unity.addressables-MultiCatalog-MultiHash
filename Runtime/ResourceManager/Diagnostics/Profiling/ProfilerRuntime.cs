@@ -25,13 +25,14 @@ namespace UnityEngine.ResourceManagement.Profiling
         private static ProfilerCounterValue<int> AssetLoadCounter = new ProfilerCounterValue<int>(ProfilerCategory.Loading, "Assets", ProfilerMarkerDataUnit.Count);
         private static ProfilerCounterValue<int> SceneLoadCounter = new ProfilerCounterValue<int>(ProfilerCategory.Loading, "Scenes", ProfilerMarkerDataUnit.Count);
 
-        private static ProfilerFrameData<Hash128, CatalogFrameData> m_CatalogData = new ProfilerFrameData<Hash128, CatalogFrameData>();
-        private static ProfilerFrameData<IAsyncOperation, BundleFrameData> m_BundleData = new ProfilerFrameData<IAsyncOperation, BundleFrameData>();
-        private static ProfilerFrameData<IAsyncOperation, AssetFrameData> m_AssetData = new ProfilerFrameData<IAsyncOperation, AssetFrameData>();
-        private static ProfilerFrameData<IAsyncOperation, AssetFrameData> m_SceneData = new ProfilerFrameData<IAsyncOperation, AssetFrameData>();
+        private static ProfilerFrameData<Hash128, CatalogFrameData> m_CatalogData = new ProfilerFrameData<Hash128, CatalogFrameData>(4);
+        private static ProfilerFrameData<IAsyncOperation, BundleFrameData> m_BundleData = new ProfilerFrameData<IAsyncOperation, BundleFrameData>(64);
+        private static ProfilerFrameData<IAsyncOperation, AssetFrameData> m_AssetData = new ProfilerFrameData<IAsyncOperation, AssetFrameData>(512);
+        private static ProfilerFrameData<IAsyncOperation, AssetFrameData> m_SceneData = new ProfilerFrameData<IAsyncOperation, AssetFrameData>(16);
 
-        private static Dictionary<string, IAsyncOperation> m_BundleNameToOperation = new Dictionary<string, IAsyncOperation>();
-        private static Dictionary<string, List<IAsyncOperation>> m_BundleNameToAssetOperations = new Dictionary<string, List<IAsyncOperation>>();
+        private static Dictionary<string, IAsyncOperation> m_BundleNameToOperation = new Dictionary<string, IAsyncOperation>(64);
+        private static Dictionary<string, List<IAsyncOperation>> m_BundleNameToAssetOperations = new Dictionary<string, List<IAsyncOperation>>(512);
+        private static Dictionary<IAsyncOperation, (int, float)> m_DataChange = new Dictionary<IAsyncOperation, (int, float)>(64);
 
         public static void Initialise()
         {
@@ -123,8 +124,17 @@ namespace UnityEngine.ResourceManagement.Profiling
 
             string containingBundleName = GetContainingBundleNameForLocation(handle.Location);
 
+            string assetId;
+            if (handle.Location.InternalId.EndsWith(']'))
+            {
+                int start = handle.Location.InternalId.IndexOf('[');
+                assetId = handle.Location.InternalId.Remove(start);
+            }
+            else
+                assetId = handle.Location.InternalId;
+
             AssetFrameData profileObject = new AssetFrameData();
-            profileObject.AssetCode = handle.Location.InternalId.GetHashCode();
+            profileObject.AssetCode = assetId.GetHashCode();
             profileObject.ReferenceCount = assetLoadOperation.ReferenceCount;
             profileObject.BundleCode = containingBundleName.GetHashCode();
             profileObject.Status = status;
@@ -143,7 +153,7 @@ namespace UnityEngine.ResourceManagement.Profiling
 
         private static string GetContainingBundleNameForLocation(IResourceLocation location)
         {
-            if (location.Dependencies.Count == 0)
+            if (location == null || location.Dependencies == null || location.Dependencies.Count == 0)
             {
                 // AssetDatabase mode has no dependencies
                 return "";
@@ -178,7 +188,7 @@ namespace UnityEngine.ResourceManagement.Profiling
 
         public static void SceneReleased(AsyncOperationHandle<SceneInstance> handle)
         {
-            if (handle.InternalOp is ChainOperationTypelessDepedency<SceneInstance> chainOp)
+            if (handle.InternalOp is ChainOperationTypelessDependency<SceneInstance> chainOp)
             {
                 if (m_SceneData.Remove(chainOp.WrappedOp.InternalOp))
                     SceneLoadCounter.Value -= 1;
@@ -196,6 +206,8 @@ namespace UnityEngine.ResourceManagement.Profiling
 
         private static void PushToProfilerStream()
         {
+            if (!Profiler.enabled)
+                return;
             RefreshChangedReferenceCounts();
             Profiler.EmitFrameMetaData(kResourceManagerProfilerGuid, kCatalogTag, m_CatalogData.Values);
             Profiler.EmitFrameMetaData(kResourceManagerProfilerGuid, kBundleDataTag, m_BundleData.Values);
@@ -205,42 +217,42 @@ namespace UnityEngine.ResourceManagement.Profiling
 
         private static void RefreshChangedReferenceCounts()
         {
-            Dictionary<IAsyncOperation, (int, float)> dataToChange = new Dictionary<IAsyncOperation, (int, float)>();
+            m_DataChange.Clear();
 
-            foreach (KeyValuePair<IAsyncOperation, BundleFrameData> pair in m_BundleData.Enumerate())
+            foreach (KeyValuePair<IAsyncOperation, BundleFrameData> pair in m_BundleData.Data)
             {
                 if (ShouldUpdateFrameDataWithOperationData(pair.Key, pair.Value.ReferenceCount, pair.Value.PercentComplete, out (int, float) newValues))
-                    dataToChange.Add(pair.Key, newValues);
+                    m_DataChange.Add(pair.Key, newValues);
             }
-            foreach (KeyValuePair<IAsyncOperation, (int, float)> pair in dataToChange)
+            foreach (KeyValuePair<IAsyncOperation, (int, float)> pair in m_DataChange)
             {
                 var temp = m_BundleData[pair.Key];
                 temp.ReferenceCount = pair.Value.Item1;
                 temp.PercentComplete = pair.Value.Item2;
                 m_BundleData[pair.Key] = temp;
             }
-            dataToChange.Clear();
+            m_DataChange.Clear();
 
-            foreach (KeyValuePair<IAsyncOperation,AssetFrameData> pair in m_AssetData.Enumerate())
+            foreach (KeyValuePair<IAsyncOperation,AssetFrameData> pair in m_AssetData.Data)
             {
                 if (ShouldUpdateFrameDataWithOperationData(pair.Key, pair.Value.ReferenceCount, pair.Value.PercentComplete, out (int, float) newValues))
-                    dataToChange.Add(pair.Key, newValues);
+                    m_DataChange.Add(pair.Key, newValues);
             }
-            foreach (KeyValuePair<IAsyncOperation, (int, float)> pair in dataToChange)
+            foreach (KeyValuePair<IAsyncOperation, (int, float)> pair in m_DataChange)
             {
                 var temp = m_AssetData[pair.Key];
                 temp.ReferenceCount = pair.Value.Item1;
                 temp.PercentComplete = pair.Value.Item2;
                 m_AssetData[pair.Key] = temp;
             }
-            dataToChange.Clear();
+            m_DataChange.Clear();
 
-            foreach (KeyValuePair<IAsyncOperation,AssetFrameData> pair in m_SceneData.Enumerate())
+            foreach (KeyValuePair<IAsyncOperation,AssetFrameData> pair in m_SceneData.Data)
             {
                 if (ShouldUpdateFrameDataWithOperationData(pair.Key, pair.Value.ReferenceCount, pair.Value.PercentComplete, out (int, float) newValues))
-                    dataToChange.Add(pair.Key, newValues);
+                    m_DataChange.Add(pair.Key, newValues);
             }
-            foreach (KeyValuePair<IAsyncOperation, (int, float)> pair in dataToChange)
+            foreach (KeyValuePair<IAsyncOperation, (int, float)> pair in m_DataChange)
             {
                 var temp = m_SceneData[pair.Key];
                 temp.ReferenceCount = pair.Value.Item1;

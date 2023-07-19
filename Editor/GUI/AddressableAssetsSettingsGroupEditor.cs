@@ -168,6 +168,44 @@ namespace UnityEditor.AddressableAssets.GUI
 			m_EntryTree.SetSelection(selectedIDs);
 		}
 
+        public void SelectGroup(AddressableAssetGroup group, bool fireSelectionChanged)
+        {
+            Stack<AssetEntryTreeViewItem> items = new Stack<AssetEntryTreeViewItem>();
+
+            if (m_EntryTree == null || m_EntryTree.Root == null)
+                InitialiseEntryTree();
+
+            foreach (TreeViewItem item in m_EntryTree.Root.children)
+            {
+                if (item is AssetEntryTreeViewItem i)
+                    items.Push(i);
+            }
+
+            while (items.Count > 0)
+            {
+                AssetEntryTreeViewItem item = items.Pop();
+
+                if (item.IsGroup && item.group.Guid == group.Guid)
+                {
+                    m_EntryTree.FrameItem(item.id);
+                    var selectedIds = new List<int>(){ item.id };
+                    if (fireSelectionChanged)
+                        m_EntryTree.SetSelection(selectedIds, TreeViewSelectionOptions.FireSelectionChanged);
+                    else
+                        m_EntryTree.SetSelection(selectedIds);
+                    return;
+                }
+                else if (!string.IsNullOrEmpty(item.folderPath) && item.hasChildren)
+                {
+                    foreach (TreeViewItem child in item.children)
+                    {
+                        if (child is AssetEntryTreeViewItem c)
+                            items.Push(c);
+                    }
+                }
+            }
+        }
+
 		void OnSettingsModification(AddressableAssetSettings s, AddressableAssetSettings.ModificationEvent e, object o)
 		{
 			if (m_EntryTree == null)
@@ -218,9 +256,15 @@ namespace UnityEditor.AddressableAssets.GUI
 			if (m_SearchStyles == null)
 			{
 				m_SearchStyles = new List<GUIStyle>();
+#if DISABLE_LEGACY_SEARCH_STYLE_ID
+				m_SearchStyles.Add(GetStyle("ToolbarSearchTextFieldPopup")); //GetStyle("ToolbarSeachTextField");
+				m_SearchStyles.Add(GetStyle("ToolbarSearchCancelButton"));
+				m_SearchStyles.Add(GetStyle("ToolbarSearchCancelButtonEmpty"));
+#else
 				m_SearchStyles.Add(GetStyle("ToolbarSeachTextFieldPopup")); //GetStyle("ToolbarSeachTextField");
 				m_SearchStyles.Add(GetStyle("ToolbarSeachCancelButton"));
 				m_SearchStyles.Add(GetStyle("ToolbarSeachCancelButtonEmpty"));
+#endif
 			}
 
 			if (m_ButtonStyle == null)
@@ -382,7 +426,7 @@ namespace UnityEditor.AddressableAssets.GUI
 						genericDropdownMenu.AddItem(new GUIContent("Clear Build Cache/Content Builders/" + m.Name), false, OnCleanAddressables, m);
 					}
 
-					genericDropdownMenu.AddItem(new GUIContent("Clear Build Cache/Build Pipeline Cache"), false, OnCleanSBP);
+                    genericDropdownMenu.AddItem(new GUIContent("Clear Build Cache/Build Pipeline Cache"), false, OnCleanSBP, true);
 					genericDropdownMenu.DropDown(rBuild);
 				}
 
@@ -619,8 +663,10 @@ namespace UnityEditor.AddressableAssets.GUI
 
 		void OnCleanAll()
 		{
+            if (!EditorUtility.DisplayDialog("Clear build cache", "Do you really want to clear your entire build cache and runtime data cache?", "Yes", "No"))
+                return;
 			OnCleanAddressables(null);
-			OnCleanSBP();
+            OnCleanSBP(false);
 		}
 
 		void OnCleanAddressables(object builder)
@@ -628,9 +674,9 @@ namespace UnityEditor.AddressableAssets.GUI
 			AddressableAssetSettings.CleanPlayerContent(builder as IDataBuilder);
 		}
 
-		void OnCleanSBP()
+        void OnCleanSBP(object prompt)
 		{
-			BuildCache.PurgeCache(true);
+            BuildCache.PurgeCache((bool) prompt);
 		}
 
 		void OnPrepareUpdate()

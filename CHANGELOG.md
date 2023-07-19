@@ -4,6 +4,28 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.21.14] - 2023-06-14
+- Fixed an issue where CleanBundleCache was giving an invalid handle error when Send Profiler Events was turned on
+- Fixed issue where provider data wasn't set for catalog downloads, so web request timeouts would default to 0 instead of the given value
+- Added the ability to manage Addressables labels from the asset inspector
+- Fixed an issue where the Addressables build cache would get cleared even if you pressed no in the popup window.
+- Optimised gc allocations with Addressables profiling module data transfer.
+- Fixed issue with binary catalog and asset bundle download redirect limit causing an error when set to -1 (default)
+- Fixed issue where player preferences for logging runtime exceptions weren't being compiled out using the Editor scripting define
+- Fixed an issue where in some cases sprites would not load properly when using a binary catalog
+
+## [1.21.12] - 2023-05-04
+- Fixed issue with a potential race conditon when calling GetAssetBundle to load local files using WaitForCompletion
+- Fixed compiler error when using the profiler module on a noncaching platform.
+- Fixed issue where stack overflow occurs for http requests on Unity 2022.1+ when insecure requests are disallowed.
+- Added groups field to Inspector and move assets popup.
+- Fixed issue where sprite atlas cannot be assigned to an AssetReferenceAtlasedSprite.
+
+## [1.21.10] - 2023-04-10
+- Fixed Addressables profiler not correctly displaying loaded Asset subObjects where a Asset was loaded due to a direct reference to one of its subObjects.
+- Fixed an issue where bundles built with the Append Hash to FIlename bundle naming option had strange interactions with the Prevent Updates option
+- Improved performance of BuildLayoutGenerationTask 
+
 ## [1.21.9] - 2023-03-07
 - Removed code within WriteObjectToByteList that would never be reached
 - Fixed an issue where SceneOps would have update called on them twice per frame
