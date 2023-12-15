@@ -14,7 +14,7 @@ The Addressables package by Unity provides a novel way of managing and packing a
 
 This variant forked from the original Addressables-project adds support for building your assets across several catalogs in one go and provides several other benefits, e.g. reduced build times and build size, as well as keeping the buildcache intact.
 
-本分支软件包目前跟踪 _vanilla_ Addressables package `1.21.14` 版本，测试时使用 Unity 官方 Addressables package `1.19.19` 版本。
+本分支软件包目前跟踪 _vanilla_ Addressables package `1.21.19` 版本，测试时使用 Unity 官方 Addressables package `1.19.19` 版本。
 
 **Note**: 此版本库并不跟踪 _vanilla_ Addressables package 的每个可用版本，而是更新一些特定版本。
 
