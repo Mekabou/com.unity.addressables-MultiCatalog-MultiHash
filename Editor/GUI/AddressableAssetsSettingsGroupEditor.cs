@@ -231,8 +231,10 @@ namespace UnityEditor.AddressableAssets.GUI
 		GUIStyle GetStyle(string styleName)
 		{
 			GUIStyle s = UnityEngine.GUI.skin.FindStyle(styleName);
+
 			if (s == null)
 				s = EditorGUIUtility.GetBuiltinSkin(EditorSkin.Inspector).FindStyle(styleName);
+
 			if (s == null)
 			{
 				Addressables.LogError("Missing built-in guistyle " + styleName);
@@ -251,21 +253,28 @@ namespace UnityEditor.AddressableAssets.GUI
 		[NonSerialized]
 		Texture2D m_CogIcon;
 
-		void TopToolbar(Rect toolbarPos)
-		{
-			if (m_SearchStyles == null)
-			{
-				m_SearchStyles = new List<GUIStyle>();
-#if DISABLE_LEGACY_SEARCH_STYLE_ID
-				m_SearchStyles.Add(GetStyle("ToolbarSearchTextFieldPopup")); //GetStyle("ToolbarSeachTextField");
-				m_SearchStyles.Add(GetStyle("ToolbarSearchCancelButton"));
-				m_SearchStyles.Add(GetStyle("ToolbarSearchCancelButtonEmpty"));
-#else
-				m_SearchStyles.Add(GetStyle("ToolbarSeachTextFieldPopup")); //GetStyle("ToolbarSeachTextField");
-				m_SearchStyles.Add(GetStyle("ToolbarSeachCancelButton"));
-				m_SearchStyles.Add(GetStyle("ToolbarSeachCancelButtonEmpty"));
-#endif
-			}
+        void TopToolbar(Rect toolbarPos)
+        {
+            if (m_SearchStyles == null)
+            {
+                m_SearchStyles = new List<GUIStyle>();
+
+                string toolbarSearchTextField = "ToolbarSeachTextFieldPopup";
+                string toolbarSearchCancelButton = "ToolbarSeachCancelButton";
+                string toolbarSearchCancelButtonEmpty = "ToolbarSeachCancelButtonEmpty";
+
+                if(!AddressablesGUIUtility.HasStyle(toolbarSearchTextField))
+                {
+                    toolbarSearchTextField = "ToolbarSearchTextFieldPopup";
+                    toolbarSearchCancelButton = "ToolbarSearchCancelButton";
+                    toolbarSearchCancelButtonEmpty = "ToolbarSearchCancelButtonEmpty";
+                }
+
+                m_SearchStyles.Add(GetStyle(toolbarSearchTextField)); //GetStyle("ToolbarSearchTextField");
+                m_SearchStyles.Add(GetStyle(toolbarSearchCancelButton));
+                m_SearchStyles.Add(GetStyle(toolbarSearchCancelButtonEmpty));
+
+            }
 
 			if (m_ButtonStyle == null)
 				m_ButtonStyle = GetStyle("ToolbarButton");

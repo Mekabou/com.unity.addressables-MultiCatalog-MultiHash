@@ -4,6 +4,26 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.21.19] - 2023-10-17
+- Fixed an issue where scene InternalId collisions were very likely when using dynamic internal asset naming
+- Fixed catalogs to use back slashes rather than forward slashes for android builds.
+- Fixed an issue where "Failed to remove scene from Addressables profiler" warning occurs when a scene is unloaded.
+
+## [1.21.18] - 2023-09-23
+- Fixed an issue where scene InternalId collisions were very likely when using dynamic internal asset naming
+- Fixed an issue where Android paths were being delimited with '\' rather than '/'
+
+## [1.21.17] - 2023-08-16
+- Fixed issue where sprite is missing normal texture when using "Use Existing Build" build mode
+- Fixed a bug where a GUI style was misspelled in the Editor and was recently fixed
+- Fixed an issue where asset loading would occasionally stop working if domain reload was disabled
+- Fixed an issue where Android paths were being delimited with '\' rather than '/'
+
+## [1.21.15] - 2023-08-03
+- Fixed an issue where using binary catalogs causes a crash on Android with ARM7.
+- DownloadDepedenciesAsync no longer loads asset bundles into memory
+- Fixed an exception getting thrown in the Addressables Report when drilling into a bundle chain
+
 ## [1.21.14] - 2023-06-14
 - Fixed an issue where CleanBundleCache was giving an invalid handle error when Send Profiler Events was turned on
 - Fixed issue where provider data wasn't set for catalog downloads, so web request timeouts would default to 0 instead of the given value

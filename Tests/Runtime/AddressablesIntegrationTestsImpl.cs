@@ -18,6 +18,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Text;
+using NUnit.Framework.Internal;
 using UnityEngine.AddressableAssets.ResourceProviders.Tests;
 using UnityEngine.AddressableAssets.Tests;
 using UnityEngine.Lumin;
@@ -692,10 +693,10 @@ namespace AddressableAssetsIntegrationTests
             TestCatalogProviderCustomAssetBundleResource testProvider;
             SetupBundleForProviderTests(bundleName, "bundle", key, out location, out testProvider);
 
-            var op = m_Addressables.LoadAssetAsync<object>(key);
+            var op = m_Addressables.LoadAssetAsync<TestCatalogProviderCustomAssetBundleResource.TestAssetBundleResource>(key);
             yield return op;
 
-            Assert.IsTrue(testProvider.TestInternalOp.Result.WasUsed);
+            Assert.IsTrue(op.Result.WasUsed);
 
             op.Release();
         }
@@ -913,7 +914,6 @@ namespace AddressableAssetsIntegrationTests
 
 #if !UNITY_SWITCH
         [UnityTest]
-        [Platform(Exclude = "Switch")]
         public IEnumerator LoadContentCatalogAsync_SetsUpLocalAndRemoteLocations()
         {
             yield return Init();
@@ -2289,6 +2289,7 @@ namespace AddressableAssetsIntegrationTests
             string label = AddressablesTestUtility.GetPrefabLabel("BASE");
             AsyncOperationHandle op = m_Addressables.DownloadDependenciesAsync(label);
             yield return op;
+            AssertDownloadDependencyBundlesAreValid(op);
             op.Release();
         }
 
@@ -2924,11 +2925,12 @@ namespace AddressableAssetsIntegrationTests
 
         class TestCatalogProviderCustomAssetBundleResource : BundledAssetProvider
         {
+
             public TestAssetBundleResourceInternalOp TestInternalOp;
 
             internal class TestAssetBundleResourceInternalOp : AsyncOperationBase<TestAssetBundleResource>
             {
-                TestAssetBundleResource m_Resource;
+                internal TestAssetBundleResource m_Resource;
 
                 public TestAssetBundleResourceInternalOp(TestAssetBundleResource resource)
                 {
@@ -2958,13 +2960,18 @@ namespace AddressableAssetsIntegrationTests
                 ProviderOperation<Object> op = new ProviderOperation<Object>();
                 GroupOperation group = new GroupOperation();
                 TestInternalOp = new TestAssetBundleResourceInternalOp(new TestAssetBundleResource());
+                TestInternalOp.m_RM = Addressables.Instance.ResourceManager;
                 provideHandle.ResourceManager.Acquire(TestInternalOp.Handle);
                 provideHandle.ResourceManager.Acquire(TestInternalOp.Handle);
                 group.Init(new List<AsyncOperationHandle>() {new AsyncOperationHandle(TestInternalOp)});
                 op.Init(provideHandle.ResourceManager, null, provideHandle.Location, group.Handle);
+                op.m_RM = Addressables.Instance.ResourceManager;
                 ProvideHandle handle = new ProvideHandle(provideHandle.ResourceManager, op);
                 TestInternalOp.InvokeExecute();
                 base.Provide(handle);
+                provideHandle.Complete(TestInternalOp.Result, TestInternalOp.Status == AsyncOperationStatus.Succeeded, TestInternalOp.OperationException);
+                provideHandle.ResourceManager.Release(TestInternalOp.Handle);
+                provideHandle.ResourceManager.Release(TestInternalOp.Handle);
             }
 
             internal class TestAssetBundleResource : IAssetBundleResource
@@ -2996,8 +3003,8 @@ namespace AddressableAssetsIntegrationTests
         }
 #endif
 #if !ENABLE_BINARY_CATALOG
+#if !UNITY_PS5
         [UnityTest]
-        [Platform(Exclude = "PS5")]
         public IEnumerator ClearDependencyCache_ClearsAllCachedFilesForKey()
         {
             yield return Init();
@@ -3027,6 +3034,7 @@ namespace AddressableAssetsIntegrationTests
             yield return null;
 #endif
         }
+#endif
 
         [UnityTest]
         public IEnumerator ClearDependencyCache_ClearsAllCachedFilesForKeyWithDependencies()
@@ -3118,8 +3126,8 @@ namespace AddressableAssetsIntegrationTests
 #endif
         }
 
+#if !UNITY_PS5
         [UnityTest]
-        [Platform(Exclude = "PS5")]
         public IEnumerator ClearDependencyCache_ClearsAllCachedFilesForLocationList()
         {
             yield return Init();
@@ -3148,9 +3156,10 @@ namespace AddressableAssetsIntegrationTests
             yield return null;
 #endif
         }
+#endif
 
+#if !UNITY_PS5
         [UnityTest]
-        [Platform(Exclude = "PS5")]
         public IEnumerator ClearDependencyCache_ClearsAllCachedFilesForKeyList()
         {
             yield return Init();
@@ -3181,6 +3190,7 @@ namespace AddressableAssetsIntegrationTests
             yield return null;
 #endif
         }
+#endif
 
         [UnityTest]
         public IEnumerator ClearDependencyCache_ClearsAllCachedFilesForLocationListWithDependencies()
@@ -3433,8 +3443,8 @@ namespace AddressableAssetsIntegrationTests
             Assert.IsFalse(clearCache.IsValid());
         }
 
+#if !UNITY_PS5
         [UnityTest]
-        [Platform(Exclude ="PS5")]
         public IEnumerator AssetBundleRequestOptions_ComputesCorrectSize_WhenLocationDoesNotMatchBundleName_WithHash()
         {
 #if ENABLE_CACHING
@@ -3467,9 +3477,10 @@ namespace AddressableAssetsIntegrationTests
             yield return null;
 #endif
         }
+#endif
 
+#if !UNITY_PS5
         [UnityTest]
-        [Platform(Exclude ="PS5")]
         public IEnumerator AssetBundleResource_RemovesCachedBundle_OnLoadFailure()
         {
 #if ENABLE_CACHING
@@ -3488,7 +3499,7 @@ namespace AddressableAssetsIntegrationTests
             };
             CreateFakeCachedBundle(bundleName, hash.ToString());
             CachedAssetBundle cab = new CachedAssetBundle(bundleName, hash);
-            var request = abr.CreateWebRequest(new ResourceLocationBase("testName", bundleName, typeof(AssetBundleProvider).FullName,
+            var request = abr.CreateWebRequest(new ResourceLocationBase("testName", $"http://127.0.01/{bundleName}", typeof(AssetBundleProvider).FullName,
                 typeof(IAssetBundleResource)));
 
             Assert.IsTrue(Caching.IsVersionCached(cab));
@@ -3499,9 +3510,10 @@ namespace AddressableAssetsIntegrationTests
             yield return null;
 #endif
         }
+#endif
 
+#if !UNITY_PS5
         [UnityTest]
-        [Platform(Exclude ="PS5")]
         public IEnumerator AssetBundleResource_RemovesCachedBundle_OnLoadFailure_WhenRetryCountIsZero()
         {
 #if ENABLE_CACHING
@@ -3520,7 +3532,7 @@ namespace AddressableAssetsIntegrationTests
             };
             CreateFakeCachedBundle(bundleName, hash.ToString());
             CachedAssetBundle cab = new CachedAssetBundle(bundleName, hash);
-            var request = abr.CreateWebRequest(new ResourceLocationBase("testName", bundleName, typeof(AssetBundleProvider).FullName,
+            var request = abr.CreateWebRequest(new ResourceLocationBase("testName", $"http://127.0.01/{bundleName}", typeof(AssetBundleProvider).FullName,
                 typeof(IAssetBundleResource)));
 
             Assert.IsTrue(Caching.IsVersionCached(cab));
@@ -3531,14 +3543,16 @@ namespace AddressableAssetsIntegrationTests
             yield return null;
 #endif
         }
+#endif
 
+#if !UNITY_PS5
         [Test]
-        [Platform(Exclude ="PS5")]
         public void AssetBundleResource_WhenNotLoaded_GetAssetPreloadRequest_ReturnsNull()
         {
             AssetBundleResource abr = new AssetBundleResource();
             Assert.AreEqual(null, abr.GetAssetPreloadRequest());
         }
+#endif
 
         [Test]
         public void WebRequestQueueOperation_CanSetWebRequest()

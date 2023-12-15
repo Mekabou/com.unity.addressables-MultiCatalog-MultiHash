@@ -37,20 +37,9 @@ namespace UnityEditor.AddressableAssets.Build.DataBuilders
 
 				foreach (var loc in setup.catalogBundles)
                 {
-					var bundleName = Path.GetFileName(loc.InternalId);					
-					string[] bundleNameArray = new string[2];
-					string bundleName_prefix = "";
-
-                    if (bundleName.Contains("_assets_all_"))
-                    {
-						bundleNameArray = bundleName.Split("_assets_all_", StringSplitOptions.RemoveEmptyEntries);					
-					}
-					else if (bundleName.Contains("_scenes_all_"))
-                    {
-						bundleNameArray = bundleName.Split("_scenes_all_", StringSplitOptions.RemoveEmptyEntries);						
-					}
-					bundleName_prefix = bundleNameArray[0];
-
+					var bundleName = Path.GetFileName(loc.InternalId);
+					string[] bundleNameArray = bundleName.Split("_assets_all_", StringSplitOptions.RemoveEmptyEntries);
+					var bundleName_prefix = bundleNameArray[0];
 					foreach (ExternalCatalogSetup externalCatalog in externalCatalogs)
 					{
 						string externalCatalogName = externalCatalog.CatalogName;
@@ -59,7 +48,7 @@ namespace UnityEditor.AddressableAssets.Build.DataBuilders
 						{
 							string groupName = addressableAssetGroup.Name;
 							if (bundleName_prefix.Equals(groupName))
-							{
+							{								
 								FileIntegration(remoteBuildFolder_global, externalCatalogFilesFolder, bundleName);
 							}
 						}
